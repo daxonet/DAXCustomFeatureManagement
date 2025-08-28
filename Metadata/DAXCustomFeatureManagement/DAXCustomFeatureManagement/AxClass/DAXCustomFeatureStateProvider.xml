@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DAXCustomFeatureStateProvider</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public final class DAXCustomFeatureStateProvider
+{
+    
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>isFeatureEnabled</Name>
+				<Source><![CDATA[
+    public static boolean isFeatureEnabled(DAXCustomIFeature _feature)
+    {
+        if (_feature == null)
+        {
+            throw error(Error::wrongUseOfFunction(funcName()));
+        }
+        DAXCustomFeatureManagementState featureManagementState = DAXCustomFeatureManagementState::findByFeatureName(DAXCustomFeatureStateProvider::featureName(_feature));
+        
+        if(featureManagementState == null)
+        {
+            return false;
+        }
+        
+        boolean ret = featureManagementState.IsEnabled;
+
+        if(featureManagementState.isComapnyBase())
+        {
+            ret = ret && DAXCustomFeatureManagementStateCompany::findOrCreate(featureManagementState.RecId).IsEnabled;
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>featureName</Name>
+				<Source><![CDATA[
+    public static str featureName(DAXCustomIFeature _feature)
+    {
+        if (_feature == null)
+        {
+            throw error(Error::wrongUseOfFunction(funcName()));
+        }
+
+        return classId2Name(classIdGet(_feature));
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

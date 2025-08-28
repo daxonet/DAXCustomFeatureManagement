@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
+	<Name>DAXCustomFeatureManagementCompanyDialog</Name>
+	<SourceCode>
+		<Methods xmlns="">
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+[Form]
+public class DAXCustomFeatureManagementCompanyDialog extends FormRun
+{
+    Set EnabledComapny;
+    DAXCustomFeatureManagementState DAXCustomFeatureManagementState;
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>init</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void init()
+    {
+        DAXCustomFeatureManagementState = element.args().record();
+        EnabledComapny = new Set(Types::String);
+        
+        super();
+
+        DataArea    DataArea;
+        while select DataArea
+        {
+            TmpCompanyLookup.DataArea = DataArea.id;
+            TmpCompanyLookup.Name = DataArea.name;
+            TmpCompanyLookup.insert();
+        }
+
+        DAXCustomFeatureManagementStateCompany  DAXCustomFeatureManagementStateCompany;
+        while select crosscompany DAXCustomFeatureManagementStateCompany where
+               DAXCustomFeatureManagementStateCompany.FeatureState == DAXCustomFeatureManagementState.RecId &&
+                DAXCustomFeatureManagementStateCompany.IsEnabled
+        {
+            EnabledComapny.add(DAXCustomFeatureManagementStateCompany.DataAreaId);
+        }
+            
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+		<DataSources xmlns="">
+			<DataSource>
+				<Name>TmpCompanyLookup</Name>
+				<Methods>
+					<Method>
+						<Name>editMark</Name>
+						<Source><![CDATA[
+        public edit NoYes editMark(boolean _isSet,TmpCompanyLookup _companyLookup,NoYes _value)
+        {
+            if(_isSet)
+            {
+                if(_value)
+                {
+                    EnabledComapny.add(_companyLookup.DataArea);
+                }
+                else
+                {
+                    EnabledComapny.remove(_companyLookup.DataArea);
+                }
+            }
+            return EnabledComapny.in(_companyLookup.DataArea);
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+				<Fields />
+			</DataSource>
+		</DataSources>
+		<DataControls xmlns="">
+			<Control>
+				<Name>OKCommandButton</Name>
+				<Type>CommandButton</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            super();
+
+
+            DAXCustomFeatureManagementStateCompany  DAXCustomFeatureManagementStateCompany;
+            while select crosscompany DAXCustomFeatureManagementStateCompany where
+               DAXCustomFeatureManagementStateCompany.FeatureState == DAXCustomFeatureManagementState.RecId &&
+                DAXCustomFeatureManagementStateCompany.IsEnabled
+            {
+                if(!EnabledComapny.in(DAXCustomFeatureManagementStateCompany.DataAreaId))
+                {
+                    DAXCustomFeatureManagementStateCompany::disableFeature(DAXCustomFeatureManagementState.RecId,DAXCustomFeatureManagementStateCompany.DataAreaId);
+                }
+            }
+
+            SetEnumerator se = EnabledComapny.getEnumerator();
+            while(se.moveNext())
+            {
+                CompanyId companyId = se.current();
+                DAXCustomFeatureManagementStateCompany::enableFeature(DAXCustomFeatureManagementState.RecId,companyId);
+            }                    
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+		</DataControls>
+		<Members xmlns="" />
+	</SourceCode>
+	<DataSources>
+		<AxFormDataSource xmlns="">
+			<Name>TmpCompanyLookup</Name>
+			<Table>TmpCompanyLookup</Table>
+			<Fields>
+				<AxFormDataSourceField>
+					<DataField>DataArea</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>DataAreaId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>Name</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>Partition</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>RecId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>TableId</DataField>
+				</AxFormDataSourceField>
+			</Fields>
+			<ReferencedDataSources />
+			<DataSourceLinks />
+			<DerivedDataSources />
+		</AxFormDataSource>
+	</DataSources>
+	<Design>
+		<AllowUserSetup xmlns="">No</AllowUserSetup>
+		<Caption xmlns="">Featere enable by  company</Caption>
+		<DialogSize xmlns="">Medium</DialogSize>
+		<Pattern xmlns="">Dialog</Pattern>
+		<PatternVersion xmlns="">1.2</PatternVersion>
+		<SetCompany xmlns="">No</SetCompany>
+		<Style xmlns="">Dialog</Style>
+		<WindowType xmlns="">Popup</WindowType>
+		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormGroupControl">
+				<Name>FormGroup</Name>
+				<HeightMode>SizeToAvailable</HeightMode>
+				<Pattern>ToolbarList</Pattern>
+				<PatternVersion>1.2</PatternVersion>
+				<Type>Group</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormGridControl">
+						<Name>FormGridControl1</Name>
+						<Type>Grid</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormCheckBoxControl">
+								<Name>FormCheckBoxControl1</Name>
+								<Type>CheckBox</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<DataMethod>editMark</DataMethod>
+								<DataSource>TmpCompanyLookup</DataSource>
+								<Label>Enable</Label>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormStringControl">
+								<Name>TmpCompanyLookup_DataArea</Name>
+								<Type>String</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<DataField>DataArea</DataField>
+								<DataSource>TmpCompanyLookup</DataSource>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormStringControl">
+								<Name>TmpCompanyLookup_Name</Name>
+								<Type>String</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<DataField>Name</DataField>
+								<DataSource>TmpCompanyLookup</DataSource>
+							</AxFormControl>
+						</Controls>
+						<MultiSelect>No</MultiSelect>
+						<ShowRowLabels>No</ShowRowLabels>
+					</AxFormControl>
+				</Controls>
+				<Style>DialogContent</Style>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormButtonGroupControl">
+				<Name>ButtonGroup</Name>
+				<ElementPosition>1431655764</ElementPosition>
+				<FilterExpression>%1</FilterExpression>
+				<LeftMode>AutoLeft</LeftMode>
+				<Type>ButtonGroup</Type>
+				<VerticalSpacing>-1</VerticalSpacing>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormCommandButtonControl">
+						<Name>OKCommandButton</Name>
+						<ElementPosition>1073741822</ElementPosition>
+						<FilterExpression>%1</FilterExpression>
+						<HeightMode>Auto</HeightMode>
+						<Type>CommandButton</Type>
+						<VerticalSpacing>-1</VerticalSpacing>
+						<WidthMode>Auto</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<ButtonDisplay>TextOnly</ButtonDisplay>
+						<Command>OK</Command>
+						<DefaultButton>Yes</DefaultButton>
+						<SaveRecord>No</SaveRecord>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormCommandButtonControl">
+						<Name>CancelCommandButton</Name>
+						<ElementPosition>1610612733</ElementPosition>
+						<FilterExpression>%1</FilterExpression>
+						<HeightMode>Auto</HeightMode>
+						<Type>CommandButton</Type>
+						<VerticalSpacing>-1</VerticalSpacing>
+						<WidthMode>Auto</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<ButtonDisplay>TextOnly</ButtonDisplay>
+						<Command>Cancel</Command>
+						<SaveRecord>No</SaveRecord>
+					</AxFormControl>
+				</Controls>
+				<ArrangeMethod>HorizontalRight</ArrangeMethod>
+				<Style>DialogCommitContainer</Style>
+			</AxFormControl>
+		</Controls>
+	</Design>
+	<Parts />
+</AxForm>

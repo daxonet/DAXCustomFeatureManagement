@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
+	<Name>DAXCustomFeatureManagement</Name>
+	<SourceCode>
+		<Methods xmlns="">
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+[Form]
+public class DAXCustomFeatureManagement extends FormRun
+{
+    NoYes byComapny;
+
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>init</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void init()
+    {
+        byComapny = element.args().parmEnum();
+        super();
+
+        if(byComapny)
+        {
+            ButtonCompany.visible(false);
+            SysQuery::findOrCreateRange(DAXCustomFeatureManagementState_ds.queryBuildDataSource(),
+                                        fieldNum(DAXCustomFeatureManagementState,IsEnabled))
+                .value(queryValue(NoYes::Yes));
+
+            SysQuery::findOrCreateRange(DAXCustomFeatureManagementMetadata_ds.queryBuildDataSource(),
+                                        fieldNum(DAXCustomFeatureManagementMetadata,CompanyBase))
+                .value(queryValue(NoYes::Yes));
+            
+            DAXCustomFeatureManagementState_ds.object(fieldNum(DAXCustomFeatureManagementState,IsEnabled)).visible(false);
+            DAXCustomFeatureManagementMetadata_ds.object(fieldNum(DAXCustomFeatureManagementMetadata,EnableDate)).visible(false);
+        }
+        else
+        {
+            displayCompanyEnable.visible(false);
+        }
+
+        
+
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+		<DataSources xmlns="">
+			<DataSource>
+				<Name>DAXCustomFeatureManagementMetadata</Name>
+				<Methods>
+					<Method>
+						<Name>active</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public int active()
+        {
+            int ret;
+    
+            ret = super();
+            if(byComapny)
+            {
+                ButtonEnable.enabled(DAXCustomFeatureManagementStateCompany::find(DAXCustomFeatureManagementMetadata.FeatureState).IsEnabled == false);
+                ButtonDisable.enabled(DAXCustomFeatureManagementStateCompany::find(DAXCustomFeatureManagementMetadata.FeatureState).IsEnabled);
+            }
+            else
+            {
+                ButtonEnable.enabled(DAXCustomFeatureManagementState.IsEnabled == false);
+                ButtonDisable.enabled(DAXCustomFeatureManagementState.IsEnabled);
+                ButtonCompany.enabled(DAXCustomFeatureManagementState.IsEnabled && DAXCustomFeatureManagementMetadata.CompanyBase);
+            }
+            return ret;
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>displayCompanyEnable</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public display NoYes displayCompanyEnable(DAXCustomFeatureManagementMetadata _featureManagementMetadata)
+        {
+            return DAXCustomFeatureManagementStateCompany::find(_featureManagementMetadata.FeatureState).IsEnabled;
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+				<Fields />
+			</DataSource>
+		</DataSources>
+		<DataControls xmlns="">
+			<Control>
+				<Name>ButtonEnable</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            super();
+            if(byComapny)
+            {
+                DAXCustomFeatureManagementStateCompany::enableFeature(DAXCustomFeatureManagementState.RecId);
+            }
+            else
+            {
+                DAXCustomFeatureManagementState::enableFeature(DAXCustomFeatureManagementState.RecId);
+            }
+            DAXCustomFeatureManagementMetadata_ds.executeQuery();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>ButtonDisable</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            super();
+            if(byComapny)
+            {
+                DAXCustomFeatureManagementStateCompany::disableFeature(DAXCustomFeatureManagementState.RecId);
+            }
+            else
+            {
+                DAXCustomFeatureManagementState::disableFeature(DAXCustomFeatureManagementState.RecId);
+            }
+            DAXCustomFeatureManagementMetadata_ds.executeQuery();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>ButtonCompany</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            super();
+            DAXCustomFeatureManagementState.openManagementCompanyDialog();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+		</DataControls>
+		<Members xmlns="" />
+	</SourceCode>
+	<DataSources>
+		<AxFormDataSource xmlns="">
+			<Name>DAXCustomFeatureManagementMetadata</Name>
+			<Table>DAXCustomFeatureManagementMetadata</Table>
+			<Fields>
+				<AxFormDataSourceField>
+					<DataField>DeployedDate</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>DisplayName</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>EnableDate</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>FeatureNumber</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>FeatureState</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>Module</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>RecId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>TableId</DataField>
+				</AxFormDataSourceField>
+			</Fields>
+			<ReferencedDataSources />
+			<AllowCreate>No</AllowCreate>
+			<AllowDelete>No</AllowDelete>
+			<AllowEdit>No</AllowEdit>
+			<InsertIfEmpty>No</InsertIfEmpty>
+			<DataSourceLinks />
+			<DerivedDataSources />
+		</AxFormDataSource>
+		<AxFormDataSource xmlns="">
+			<Name>DAXCustomFeatureManagementState</Name>
+			<Table>DAXCustomFeatureManagementState</Table>
+			<Fields>
+				<AxFormDataSourceField>
+					<DataField>DataAreaId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>IsEnabled</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>Name</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>Partition</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>RecId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>TableId</DataField>
+				</AxFormDataSourceField>
+			</Fields>
+			<ReferencedDataSources />
+			<JoinSource>DAXCustomFeatureManagementMetadata</JoinSource>
+			<LinkType>InnerJoin</LinkType>
+			<AllowCreate>No</AllowCreate>
+			<AllowDelete>No</AllowDelete>
+			<AllowEdit>No</AllowEdit>
+			<InsertIfEmpty>No</InsertIfEmpty>
+			<DataSourceLinks />
+			<DerivedDataSources />
+		</AxFormDataSource>
+	</DataSources>
+	<Design>
+		<Pattern xmlns="">ListPage</Pattern>
+		<PatternVersion xmlns="">UX7 1.0</PatternVersion>
+		<Style xmlns="">ListPage</Style>
+		<UseCaptionFromMenuItem xmlns="">Yes</UseCaptionFromMenuItem>
+		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormActionPaneControl">
+				<Name>FormActionPaneControl1</Name>
+				<Type>ActionPane</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormButtonGroupControl">
+						<Name>FormButtonGroupControl1</Name>
+						<Type>ButtonGroup</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormButtonControl">
+								<Name>ButtonEnable</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Type>Button</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<NeedsRecord>Yes</NeedsRecord>
+								<Text>Enable</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormButtonControl">
+								<Name>ButtonDisable</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Type>Button</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<NeedsRecord>Yes</NeedsRecord>
+								<Text>Disable</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormButtonControl">
+								<Name>ButtonCompany</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Type>Button</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<NeedsRecord>Yes</NeedsRecord>
+								<Text>Companies</Text>
+							</AxFormControl>
+						</Controls>
+					</AxFormControl>
+				</Controls>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormGroupControl">
+				<Name>FormGroupControl1</Name>
+				<Pattern>CustomAndQuickFilters</Pattern>
+				<PatternVersion>1.1</PatternVersion>
+				<Type>Group</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl>
+						<Name>QuickFilterControl1</Name>
+						<FormControlExtension>
+							<Name>QuickFilterControl</Name>
+							<ExtensionComponents />
+							<ExtensionProperties>
+								<AxFormControlExtensionProperty>
+									<Name>targetControlName</Name>
+									<Type>String</Type>
+								</AxFormControlExtensionProperty>
+								<AxFormControlExtensionProperty>
+									<Name>placeholderText</Name>
+									<Type>String</Type>
+								</AxFormControlExtensionProperty>
+								<AxFormControlExtensionProperty>
+									<Name>defaultColumnName</Name>
+									<Type>String</Type>
+								</AxFormControlExtensionProperty>
+							</ExtensionProperties>
+						</FormControlExtension>
+					</AxFormControl>
+				</Controls>
+				<ArrangeMethod>HorizontalLeft</ArrangeMethod>
+				<FrameType>None</FrameType>
+				<Style>CustomFilter</Style>
+				<ViewEditMode>Edit</ViewEditMode>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormGridControl">
+				<Name>FormGridControl1</Name>
+				<AllowEdit>No</AllowEdit>
+				<Type>Grid</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormStringControl">
+						<Name>DAXCustomFeatureManagementMetadata_FeatureNumber</Name>
+						<Type>String</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataField>FeatureNumber</DataField>
+						<DataSource>DAXCustomFeatureManagementMetadata</DataSource>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormComboBoxControl">
+						<Name>DAXCustomFeatureManagementMetadata_Module</Name>
+						<Type>ComboBox</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataField>Module</DataField>
+						<DataSource>DAXCustomFeatureManagementMetadata</DataSource>
+						<Items />
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormStringControl">
+						<Name>DAXCustomFeatureManagementMetadata_DisplayName</Name>
+						<Type>String</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataField>DisplayName</DataField>
+						<DataSource>DAXCustomFeatureManagementMetadata</DataSource>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormDateControl">
+						<Name>DAXCustomFeatureManagementMetadata_DeployedDate</Name>
+						<Type>Date</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataField>DeployedDate</DataField>
+						<DataSource>DAXCustomFeatureManagementMetadata</DataSource>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormCheckBoxControl">
+						<Name>DAXCustomFeatureManagementState_IsEnabled</Name>
+						<Type>CheckBox</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataField>IsEnabled</DataField>
+						<DataSource>DAXCustomFeatureManagementState</DataSource>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormCheckBoxControl">
+						<Name>displayCompanyEnable</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<Type>CheckBox</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataMethod>displayCompanyEnable</DataMethod>
+						<DataSource>DAXCustomFeatureManagementMetadata</DataSource>
+						<Label>Enabled</Label>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormDateControl">
+						<Name>DAXCustomFeatureManagementMetadata_EnableDate</Name>
+						<Type>Date</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataField>EnableDate</DataField>
+						<DataSource>DAXCustomFeatureManagementMetadata</DataSource>
+					</AxFormControl>
+				</Controls>
+			</AxFormControl>
+		</Controls>
+	</Design>
+	<Parts />
+</AxForm>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DAXCustomFeatureManagementMetadataDataPopulation</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class DAXCustomFeatureManagementMetadataDataPopulation
+{
+
+    
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>populate</Name>
+				<Source><![CDATA[
+    internal static void populate()
+    {
+        DAXCustomFeatureManagementMetadataDataPopulation::cleanupRemovedFeatures();
+        DAXCustomFeatureManagementMetadataDataPopulation::populateFeatureManagementState();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>cleanupRemovedFeatures</Name>
+				<Source><![CDATA[
+    private static void cleanupRemovedFeatures()
+    {
+        ttsbegin;
+
+        DAXCustomFeatureManagementState state;
+        while select state
+        {
+            if (!DAXCustomFeatureMetadataFactory::instanceExists(state.Name))
+            {
+                DAXCustomFeatureManagementMetadata metadataToDelete;
+
+
+                delete_from metadataToDelete where metadataToDelete.FeatureState == state.RecId;
+                
+                DAXCustomFeatureManagementState stateToDelete;
+                delete_from stateToDelete where stateToDelete.RecId == state.RecId;
+            }
+        }
+
+        ttscommit;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>populateFeatureManagementState</Name>
+				<Source><![CDATA[
+    private static void populateFeatureManagementState()
+    {
+        Array features = DAXCustomFeatureMetadataFactory::getInstances();
+
+        if (features)
+        {
+            date systemDate = DateTimeUtil::date(DateTimeUtil::getSystemDateTime());
+
+            for (int i = 1; i <= features.lastIndex(); i++)
+            {
+                var feature = features.value(i) as DAXCustomIFeature;
+                if (feature != null)
+                {
+                    DAXCustomFeatureManagementMetadataDataPopulation::writeFeatureManagementState(features.value(i), systemDate);
+                }
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>writeFeatureManagementState</Name>
+				<Source><![CDATA[
+    internal static void writeFeatureManagementState(DAXCustomIFeature feature, date _systemDate)
+    {
+        FeatureName featureName = DAXCustomFeatureStateProvider::featureName(feature);
+
+        var featureState = DAXCustomFeatureManagementState::findByFeatureName(featureName, true);
+
+        if (DAXCustomFeatureManagementMetadata::findByFeatureState(featureState.RecId).RecId == 0)
+        { 
+            DAXCustomFeatureManagementMetadataDataPopulation::insertFeatureManagementState(featureState, feature, _systemDate);
+            
+        }
+        else
+        {
+            DAXCustomFeatureManagementMetadataDataPopulation::updateFeatureManagementState(featureState, feature, _systemDate);
+        }
+
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>updateFeatureManagementState</Name>
+				<Source><![CDATA[
+    private static void updateFeatureManagementState(DAXCustomFeatureManagementState _featureState, DAXCustomIFeature _feature, date _systemDate)
+    {
+        ttsbegin;
+
+        DAXCustomFeatureManagementMetadata featureManagementMetadata = DAXCustomFeatureManagementMetadata::findByFeatureState(_featureState.RecId, true);
+        DAXCustomFeatureManagementMetadataDataPopulation::initializeFeatureManagementMetadata(_feature, featureManagementMetadata);
+        if (featureManagementMetadata.DeployedDate == dateNull())
+        {
+            featureManagementMetadata.DeployedDate = _systemDate;
+        }
+        featureManagementMetadata.write();
+
+        ttscommit;
+
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>insertFeatureManagementState</Name>
+				<Source><![CDATA[
+    private static void insertFeatureManagementState(DAXCustomFeatureManagementState _featureState, DAXCustomIFeature _feature, date _systemDate)
+    {
+        ttsbegin;
+
+        _featureState.initializeForFeature(_feature);
+        _featureState.write();
+
+        DAXCustomFeatureManagementMetadata featureManagementMetadata = DAXCustomFeatureManagementMetadata::findByFeatureState(_featureState.RecId, true);
+        DAXCustomFeatureManagementMetadataDataPopulation::initializeFeatureManagementMetadata(_feature, featureManagementMetadata);
+        featureManagementMetadata.FeatureState = _featureState.RecId;
+        featureManagementMetadata.DeployedDate = _systemDate;
+        featureManagementMetadata.write();
+
+        ttscommit;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>initializeFeatureManagementMetadata</Name>
+				<Source><![CDATA[
+    private static void initializeFeatureManagementMetadata(DAXCustomIFeature _feature, DAXCustomFeatureManagementMetadata _featureManagementMetadata)
+    {
+        _featureManagementMetadata.FeatureNumber = _feature.featureNumber();
+        _featureManagementMetadata.DisplayName = _feature.displayName();
+        _featureManagementMetadata.Module = _feature.module();
+        _featureManagementMetadata.CompanyBase = (_feature as DAXCustomIFeatureCompany) != null;
+        
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

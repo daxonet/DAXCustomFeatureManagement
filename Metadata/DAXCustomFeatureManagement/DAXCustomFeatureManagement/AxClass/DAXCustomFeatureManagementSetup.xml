@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DAXCustomFeatureManagementSetup</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[SysSetupTableAttribute(tableStr(DAXCustomFeatureManagementState))]
+[SysSetupTableAttribute(tableStr(DAXCustomFeatureManagementMetadata))]
+[SysSetupConfig(true,120,0.0)]
+public final class DAXCustomFeatureManagementSetup extends SysSetupAsync implements SysSetup
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>loadData</Name>
+				<Source><![CDATA[
+    [Hookable(false)]
+    public void loadData()
+    {
+        DAXCustomFeatureManagementMetadataDataPopulation::populate();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    public static void main(Args _args)
+    {
+        new DAXCustomFeatureManagementSetup().loadData();
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

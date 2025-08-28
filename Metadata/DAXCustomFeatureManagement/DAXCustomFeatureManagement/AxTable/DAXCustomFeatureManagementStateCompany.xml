@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DAXCustomFeatureManagementStateCompany</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class DAXCustomFeatureManagementStateCompany extends common
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>find</Name>
+				<Source><![CDATA[
+    static public DAXCustomFeatureManagementStateCompany find(RecId _featureStateRecId,boolean _selectForUpdate = false)
+    {
+        DAXCustomFeatureManagementStateCompany  FeatureManagementStateCompany;
+
+        if(_selectForUpdate)
+            FeatureManagementStateCompany.selectForUpdate(true);
+
+        select FeatureManagementStateCompany where
+            FeatureManagementStateCompany.FeatureState == _featureStateRecId;
+
+
+        return FeatureManagementStateCompany;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>findOrCreate</Name>
+				<Source><![CDATA[
+    static public DAXCustomFeatureManagementStateCompany findOrCreate(RecId _featureStateRecId,boolean _selectForUpdate = false)
+    {
+        DAXCustomFeatureManagementStateCompany  FeatureManagementStateCompany = DAXCustomFeatureManagementStateCompany::find(_featureStateRecId,_selectForUpdate);
+
+        if(!FeatureManagementStateCompany)
+        {
+            FeatureManagementStateCompany.FeatureState = _featureStateRecId;
+            FeatureManagementStateCompany.insert();
+        }
+
+        return FeatureManagementStateCompany;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>enableFeature</Name>
+				<Source><![CDATA[
+    public static void enableFeature(RecId _featureStateRecId,CompanyId _companyId = curExt())
+    {
+
+        boolean isFeatureEnabled = false;
+
+        ttsbegin;
+        changecompany(_companyId)
+        {
+
+            DAXCustomFeatureManagementStateCompany featureState = DAXCustomFeatureManagementStateCompany::findOrCreate(_featureStateRecId, true);
+        
+            if (featureState)
+            {
+                featureState.IsEnabled = true;
+            
+                if (featureState.validateWrite())
+                {
+                    featureState.write();
+                    isFeatureEnabled = true;
+                }
+
+            }
+        }
+
+        ttscommit;
+        
+
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>disableFeature</Name>
+				<Source><![CDATA[
+    public static void disableFeature(RecId _featureStateRecId,CompanyId _companyId = curExt())
+    {
+        boolean isFeatureDisabled = false;
+
+        ttsbegin;
+        changecompany(_companyId)
+        {
+
+            DAXCustomFeatureManagementStateCompany featureState = DAXCustomFeatureManagementStateCompany::find(_featureStateRecId, true);
+        
+            if (featureState)
+            {
+            
+                featureState.IsEnabled = false;
+
+                if (featureState.validateWrite())
+                {
+                    featureState.write();
+                    isFeatureDisabled = true;
+                }
+            }
+        }
+        
+
+        ttscommit;
+
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<SubscriberAccessLevel>
+		<Read>Allow</Read>
+	</SubscriberAccessLevel>
+	<DeleteActions />
+	<FieldGroups>
+		<AxTableFieldGroup>
+			<Name>AutoReport</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoLookup</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoIdentification</Name>
+			<AutoPopulate>Yes</AutoPopulate>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoSummary</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoBrowse</Name>
+			<Fields />
+		</AxTableFieldGroup>
+	</FieldGroups>
+	<Fields>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldInt64">
+			<Name>FeatureState</Name>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>IsEnabled</Name>
+			<ExtendedDataType>FeatureIsEnabledV0</ExtendedDataType>
+			<EnumType>NoYes</EnumType>
+		</AxTableField>
+	</Fields>
+	<FullTextIndexes />
+	<Indexes>
+		<AxTableIndex>
+			<Name>FeatureStateIdx</Name>
+			<AlternateKey>Yes</AlternateKey>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>FeatureState</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+	</Indexes>
+	<Mappings />
+	<Relations />
+	<StateMachines />
+</AxTable>

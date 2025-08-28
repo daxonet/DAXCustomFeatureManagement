@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DAXCustomIFeature</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+interface DAXCustomIFeature
+{
+}
+
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>featureNumber</Name>
+				<Source><![CDATA[
+    str featureNumber()
+    {
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>module</Name>
+				<Source><![CDATA[
+    int module()
+    {
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>displayName</Name>
+				<Source><![CDATA[
+    str displayName()
+    {
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isEnabled</Name>
+				<Source><![CDATA[
+    boolean isEnabled()
+    {
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

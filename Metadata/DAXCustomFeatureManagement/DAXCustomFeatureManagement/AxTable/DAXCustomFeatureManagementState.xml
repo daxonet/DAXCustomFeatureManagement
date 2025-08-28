@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DAXCustomFeatureManagementState</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class DAXCustomFeatureManagementState extends common
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>findByFeatureName</Name>
+				<Source><![CDATA[
+    [Hookable(false)]
+    public static DAXCustomFeatureManagementState findByFeatureName(
+        FeatureName _featureName,
+        boolean _forUpdate = false)
+    {
+        DAXCustomFeatureManagementState featureState;
+        featureState.selectForUpdate(_forUpdate);
+
+        if (_featureName)
+        {
+            select firstonly featureState
+               where featureState.Name == _featureName;
+        }
+
+        return featureState;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>find</Name>
+				<Source><![CDATA[
+    internal static DAXCustomFeatureManagementState find(
+        RecId _featureStateRecId,
+        boolean _forUpdate = false,
+        ConcurrencyModel _concurrencyModel = ConcurrencyModel::Auto)
+    {
+        DAXCustomFeatureManagementState featureManagementState;
+
+        featureManagementState.selectForUpdate(_forUpdate);
+
+        if (_forUpdate && _concurrencyModel != ConcurrencyModel::Auto)
+        {
+            featureManagementState.concurrencyModel(_concurrencyModel);
+        }
+
+        if (_featureStateRecId)
+        {
+            select firstonly * from featureManagementState
+                where featureManagementState.RecId == _featureStateRecId;
+        }
+
+        return featureManagementState;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>initializeForFeature</Name>
+				<Source><![CDATA[
+    public void initializeForFeature(DAXCustomIFeature _feature)
+    {
+        this.Name = DAXCustomFeatureStateProvider::featureName(_feature);
+        this.IsEnabled = false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isComapnyBase</Name>
+				<Source><![CDATA[
+    public boolean isComapnyBase()
+    {
+        return SysDictClass::newName(this.Name).isImplementing(classNum(DAXCustomIFeatureCompany));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>setFeatureEnableDate</Name>
+				<Source><![CDATA[
+    private static void setFeatureEnableDate(DAXCustomFeatureManagementState _featureState, FeatureEnableDate _enableDate)
+    {
+        ttsbegin;
+
+        DAXCustomFeatureManagementMetadata featureManagementMetadata = DAXCustomFeatureManagementMetadata::findByFeatureState(_featureState.RecId, true);
+
+        if (featureManagementMetadata)
+        {
+            featureManagementMetadata.EnableDate = _enableDate;
+
+            if (featureManagementMetadata.validateWrite())
+            {
+                featureManagementMetadata.write();
+            }
+        }
+
+        ttscommit;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>enableFeature</Name>
+				<Source><![CDATA[
+    public static void enableFeature(RecId _featureStateRecId)
+    {
+
+        boolean isFeatureEnabled = false;
+
+        ttsbegin;
+
+        DAXCustomFeatureManagementState featureState = DAXCustomFeatureManagementState::find(_featureStateRecId, true);
+        
+        if (featureState)
+        {
+            featureState.IsEnabled = true;
+            
+            if (featureState.validateWrite())
+            {
+                featureState.write();
+                isFeatureEnabled = true;
+
+                DAXCustomFeatureManagementState::setFeatureEnableDate(featureState, today());
+            }            
+
+        }        
+
+        ttscommit;
+        
+
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>disableFeature</Name>
+				<Source><![CDATA[
+    public static void disableFeature(RecId _featureStateRecId)
+    {
+        boolean isFeatureDisabled = false;
+
+        ttsbegin;
+
+        var featureState = DAXCustomFeatureManagementState::find(_featureStateRecId, true);
+
+        if (featureState)
+        {
+            
+            featureState.IsEnabled = false;
+
+            if (featureState.validateWrite())
+            {
+                featureState.write();
+                isFeatureDisabled = true;
+
+                DAXCustomFeatureManagementState::setFeatureEnableDate(featureState, dateNull());
+            }
+        }
+        
+
+        ttscommit;
+
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>openManagementCompanyDialog</Name>
+				<Source><![CDATA[
+    public void openManagementCompanyDialog()
+    {
+        Args args = new Args(formStr(DAXCustomFeatureManagementCompanyDialog));
+        FormRun formRun;
+        args.record(this);
+        args.openMode(OpenMode::Edit);
+        formRun = classfactory.formRunClass(args);
+        formRun.init();
+        formRun.run();
+        formRun.wait();
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<SubscriberAccessLevel>
+		<Read>Allow</Read>
+	</SubscriberAccessLevel>
+	<SaveDataPerCompany>No</SaveDataPerCompany>
+	<SaveDataPerPartition>No</SaveDataPerPartition>
+	<SystemTable>Yes</SystemTable>
+	<DeleteActions />
+	<FieldGroups>
+		<AxTableFieldGroup>
+			<Name>AutoReport</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoLookup</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoIdentification</Name>
+			<AutoPopulate>Yes</AutoPopulate>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoSummary</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoBrowse</Name>
+			<Fields />
+		</AxTableFieldGroup>
+	</FieldGroups>
+	<Fields>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>Name</Name>
+			<ExtendedDataType>FeatureName</ExtendedDataType>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>IsEnabled</Name>
+			<ExtendedDataType>FeatureIsEnabledV0</ExtendedDataType>
+			<Label>Enabled</Label>
+			<EnumType>NoYes</EnumType>
+		</AxTableField>
+	</Fields>
+	<FullTextIndexes />
+	<Indexes>
+		<AxTableIndex>
+			<Name>EnabledIdx</Name>
+			<AllowDuplicates>Yes</AllowDuplicates>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>IsEnabled</DataField>
+				</AxTableIndexField>
+				<AxTableIndexField>
+					<DataField>Name</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+		<AxTableIndex>
+			<Name>NameIdx</Name>
+			<AlternateKey>Yes</AlternateKey>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>Name</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+	</Indexes>
+	<Mappings />
+	<Relations />
+	<StateMachines />
+</AxTable>

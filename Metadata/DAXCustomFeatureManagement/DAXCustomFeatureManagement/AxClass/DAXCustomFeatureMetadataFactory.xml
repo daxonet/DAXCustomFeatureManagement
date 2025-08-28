@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>DAXCustomFeatureMetadataFactory</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal static class DAXCustomFeatureMetadataFactory
+{
+    private static Map instanceMap; // Access using instancesMap()
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>getInstances</Name>
+				<Source><![CDATA[
+    internal static Array getInstances()
+    {
+        SysDictClass    dictClass,featureDictClass;
+        List            implementedClassList;
+        ListEnumerator  listEnumerator;
+        ClassId         featureClassId;
+        Array           ret = new Array(Types::Class);
+
+        dictClass           = new SysDictClass(classNum(DAXCustomIFeature));
+        implementedClassList   = dictClass.implementedBy();
+        if (implementedClassList.elements())
+        {
+            listEnumerator = implementedClassList.getEnumerator();
+            int idx = 0;
+            while (listEnumerator.moveNext())
+            {
+                featureClassId = listEnumerator.current();
+                featureDictClass = new SysDictClass(featureClassId);
+                if (!featureDictClass.isInterface())
+                {
+                    str name = featureDictClass.name();
+                    idx++;
+                    if(featureDictClass.hasStaticMethod('instance'))
+                    {
+                        ret.value(idx,featureDictClass.callStatic('instance'));
+                    }
+                    else
+                    {
+                        ret.value(idx,featureDictClass.makeObject());
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>instanceExists</Name>
+				<Source><![CDATA[
+    internal static boolean instanceExists(FeatureName _featureName)
+    {
+        return _featureName != '' && DAXCustomFeatureMetadataFactory::instancesMap().exists(_featureName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>instancesMap</Name>
+				<Source><![CDATA[
+    private static Map instancesMap()
+    {
+        if (!instanceMap)
+        {
+            instanceMap = new Map(Types::String, Types::AnyType);
+
+            Array features = DAXCustomFeatureMetadataFactory::getInstances();
+
+            if (features)
+            {
+                for (int i = 1; i <= features.lastIndex(); i++)
+                {
+                    DAXCustomIFeature featureBase = features.value(i);
+                    instanceMap.insert(DAXCustomFeatureStateProvider::featureName(featureBase), featureBase);
+                }
+            }
+        }
+
+        return instanceMap;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
