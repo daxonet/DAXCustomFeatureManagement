@@ -167,20 +167,6 @@ You should see the **User Group** control in `SysUserInfo` form toggle visibilit
 
 ---
 
-## 🧭 Architecture Diagram
-
-```mermaid
-flowchart LR
-  A[Feature class implements<br/>DAXCustomIFeature / DAXCustomIFeatureCompany] --> B[Singleton instance<br/>+ metadata: featureNumber, displayName, module]
-  B --> C[isEnabled() calls<br/>DAXCustomFeatureStateProvider::isFeatureEnabled(instance)]
-  C -->|true/false| D[Handlers & Extensions<br/>(forms, menus, methods) show/hide or execute]
-  E[Setup runner<br/>DAXCustomFeatureManagementSetup] --> F[Feature records<br/>(Dev VM manual init)]
-  F --> C
-  G[Custom feature management pages<br/>System administration > Setup] --> F
-```
-
----
-
 ## 🔑 Enabling Features
 On **development VMs**, records are not auto-created.  
 Run the following URL to update setup:
